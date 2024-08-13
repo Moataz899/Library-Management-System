@@ -1,36 +1,22 @@
 class Person:
-    def __init__(self):
-        while True:
-            self.name = str(input("Please Enter Your Name: "))
-            if len(self.name) > 0 and all(c.isalpha() or c.isspace() for c in self.name):
-                break
-            else:
-                print("Please enter a valid name (letters only and non-empty).")
-        
-        while True:
-            self.email = str(input("Please Enter Your Email: ").strip())
-            if "@" in self.email and len(self.email) > 0:
-                break
-            else:
-                print("Please enter a valid email (must contain '@' and non-empty).")
-
-        while True:
-            try:
-                self.phoneNumber = int(input("Please Enter Your Phone Number: "))
-                break
-            except ValueError:
-                print("Please enter a valid phone number (digits only).")
+    def __init__(self, name, email, password, phone_number):
+        self.name = name
+        self.email = email
+        self.password = password
+        self.phone_number = phone_number
 
     def display_info(self):
-        print(f"Name: {self.name}, Email: {self.email}, Phone Number: {self.phoneNumber}")
+        print(f"Name: {self.name}, Email: {self.email}, Phone Number: {self.phone_number}")
+
 
 class Librarian(Person):
-    def __init__(self):
-        super().__init__()
-        self.libraryId = input("Please Enter Your Library ID: ")
+    def __init__(self, name, email, password, phone_number, library_id):
+        super().__init__(name, email, password, phone_number)
+        self.library_id = library_id
 
     def display_info(self):
-        print(f"Librarian Info: Name: {self.name}, Email: {self.email}, Phone Number: {self.phoneNumber}, Library ID: {self.libraryId}")
+        super().display_info()
+        print(f"Library ID: {self.library_id}")
         print("//" * 15)
 
     def add_book(self, library, book):
@@ -66,28 +52,31 @@ class Librarian(Person):
     def display_books(self, library):
         print("Library Books:")
         library.display_books()
-        print("//" * 15)
+       
 
     def display_members(self, library):
         print("Library Members:")
         library.display_members()
-        print("//" * 15)
+        
+
 
 class Member(Person):
-    def __init__(self):
-        super().__init__()
-        self.memberId = input("Please Enter Your Member ID: ").strip()
+    def __init__(self, name, email, password, phone_number, member_id):
+        super().__init__(name, email, password, phone_number)
+        self.member_id = member_id
         self.borrowed_books = []
 
     def display_info(self):
-        print(f"Member Info: Name: {self.name}, Email: {self.email}, Phone Number: {self.phoneNumber}, Member ID: {self.memberId}")
-        
+        super().display_info()
+        print(f"Member ID: {self.member_id}")
+        print("//" * 15)
+
     def borrow_book(self, library, book):
         if book in library.books and book.available:
             if book not in self.borrowed_books:
                 book.available = False
                 self.borrowed_books.append(book)
-                library.borrowed_books.append(book)  
+                library.borrowed_books.append(book)
                 print(f"Book '{book.title}' borrowed.")
             else:
                 print(f"Book '{book.title}' already borrowed.")
@@ -99,6 +88,7 @@ class Member(Person):
             book.available = True
             self.borrowed_books.remove(book)
             library.borrowed_books.remove(book)
+            library.returned_books.append(book)
             print(f"Book '{book.title}' returned.")
         else:
             print(f"You haven't borrowed '{book.title}'.")
@@ -112,6 +102,7 @@ class Member(Person):
                 book.display_info()
         print("//" * 15)
 
+
 class Book:
     def __init__(self, title, author, isbn):
         self.title = title.strip()
@@ -123,10 +114,12 @@ class Book:
         availability = "Available" if self.available else "Not Available"
         print(f"Title: {self.title}, Author: {self.author}, ISBN: {self.isbn}, Availability: {availability}")
 
+
 class Library:
     def __init__(self):
         self.books = []
         self.members = []
+        self.librarians = []
         self.borrowed_books = []
         self.returned_books = []
 
@@ -161,8 +154,8 @@ class Library:
                 book.display_info()
 
     def search_books(self, title=None, author=None):
-        found_books = [book for book in self.books if 
-                       (title and title.lower() in book.title.lower()) or 
+        found_books = [book for book in self.books if
+                       (title and title.lower() in book.title.lower()) or
                        (author and author.lower() in book.author.lower())]
         if not found_books:
             print("No books found.")
@@ -180,49 +173,190 @@ class Library:
             for book in borrowed_books:
                 book.display_info()
 
-library = Library()
 
-librarian1 = Librarian()
-librarian1.display_info()
+class SignUp:
+    def __init__(self, library):
+        self.library = library
 
-book1 = Book("Python", "John Doe", "123")
-book2 = Book("Java", "Jane Smith", "456")
-book3 = Book("C++", "Alice Johnson", "789")
-book4 = Book("R", "Robert Brown", "101112")
+    def register_person(self):
+        while True:
+            user_type = input("Are you a Librarian or a Member? (Enter 'Librarian' or 'Member'): ").strip().lower()
+            if user_type not in ['librarian', 'member']:
+                print("Invalid input. Please enter 'Librarian' or 'Member'.")
+                continue
 
-librarian1.add_book(library, book1)
-librarian1.add_book(library, book2)
-librarian1.add_book(library, book3)
-librarian1.add_book(library, book4)
+            name = input("Please Enter Your Name: ").strip()
+            email = input("Please Enter Your Email: ").strip()
+            password = input("Please Enter Your Password: ").strip()
+            phone_number = input("Please Enter Your Phone Number: ").strip()
 
-librarian1.display_books(library)
+            if user_type == 'librarian':
+                library_id = input("Please Enter Your Library ID: ").strip()
+                new_librarian = Librarian(name, email, password, phone_number, library_id)
+                self.library.librarians.append(new_librarian)
+                print("Librarian registered successfully.")
+                return new_librarian
 
-librarian1.remove_book(library, book4)
-librarian1.display_books(library)
+            elif user_type == 'member':
+                member_id = input("Please Enter Your Member ID: ").strip()
+                new_member = Member(name, email, password, phone_number, member_id)
+                self.library.members.append(new_member)
+                print("Member registered successfully.")
+                return new_member
 
-member1 = Member()
-member2 = Member()
 
-librarian1.add_member(library, member1)
-librarian1.add_member(library, member2)
-librarian1.display_members(library)
+class SignIn:
+    def __init__(self, library):
+        self.library = library
 
-librarian1.remove_member(library, member2)
-librarian1.display_members(library)
+    def authenticate(self):
+        email = input("Please Enter Your Email: ").strip()
+        password = input("Please Enter Your Password: ").strip()
 
-member3 = Member()
-member3.display_info()
+        for librarian in self.library.librarians:
+            if librarian.email == email and librarian.password == password:
+                print("Librarian signed in successfully.")
+                return librarian
 
-member3.borrow_book(library, book2)
+        for member in self.library.members:
+            if member.email == email and member.password == password:
+                print("Member signed in successfully.")
+                return member
 
-library.display_borrowed_books()
+        print("Invalid credentials. Please try again.")
+        return None
 
-member3.return_book(library, book2)
-library.display_returned_books()
 
-library.display_members()
+class LibraryManagementSystem:
+    def __init__(self):
+        self.library = Library()
+        self.sign_up = SignUp(self.library)
+        self.sign_in = SignIn(self.library)
 
-library.search_books(title="Python")
-library.search_books(author="Jane Smith")
+    def run(self):
+        while True:
+            print("\nLibrary Management System")
+            print("1. Sign Up")
+            print("2. Sign In")
+            print("3. Exit")
+            choice = input("Choose an option: ")
 
-library.filter_borrowed_books_by_member(member3)
+            if choice == "1":
+                user = self.sign_up.register_person()
+
+            elif choice == "2":
+                user = self.sign_in.authenticate()
+                if user:
+                    if isinstance(user, Librarian):
+                        self.librarian_actions(user)
+                    elif isinstance(user, Member):
+                        self.member_actions(user)
+
+            elif choice == "3":
+                print("Exiting the system.")
+                break
+
+            else:
+                print("Invalid choice. Please choose again.")
+
+    def librarian_actions(self, librarian):
+        while True:
+            print("\nLibrarian Actions:")
+            print("1. Add Book")
+            print("2. Remove Book")
+            print("3. Add Member")
+            print("4. Remove Member")
+            print("5. Display Books")
+            print("6. Display Members")
+            print("7. Exit")
+            choice = input("Choose an action: ")
+
+            if choice == "1":
+                title = input("Enter the title of the book: ").strip()
+                author = input("Enter the author of the book: ").strip()
+                isbn = input("Enter the ISBN of the book: ").strip()
+                book = Book(title, author, isbn)
+                librarian.add_book(self.library, book)
+
+            elif choice == "2":
+                title = input("Enter the title of the book to remove: ").strip()
+                book = next((b for b in self.library.books if b.title.lower() == title.lower()), None)
+                if book:
+                    librarian.remove_book(self.library, book)
+                else:
+                    print(f"No book found with title '{title}'.")
+
+            elif choice == "3":
+                name = input("Enter the name of the member: ").strip()
+                email = input("Enter the email of the member: ").strip()
+                password = input("Enter the password of the member: ").strip()
+                phone_number = input("Enter the phone number of the member: ").strip()
+                member_id = input("Enter the member ID: ").strip()
+                member = Member(name, email, password, phone_number, member_id)
+                librarian.add_member(self.library, member)
+
+            elif choice == "4":
+                email = input("Enter the email of the member to remove: ").strip()
+                member = next((m for m in self.library.members if m.email == email), None)
+                if member:
+                    librarian.remove_member(self.library, member)
+                else:
+                    print(f"No member found with email '{email}'.")
+
+            elif choice == "5":
+                librarian.display_books(self.library)
+
+            elif choice == "6":
+                librarian.display_members(self.library)
+
+            elif choice == "7":
+                print("Exiting Librarian Actions.")
+                break
+
+            else:
+                print("Invalid choice. Please choose again.")
+
+    def member_actions(self, member):
+        while True:
+            print("\nMember Actions:")
+            print("1. Borrow a Book")
+            print("2. Return a Book")
+            print("3. Display Borrowed Books")
+            print("4. Search Books")
+            print("5. Exit")
+            choice = input("Choose an action: ")
+
+            if choice == "1":
+                title = input("Enter the title of the book to borrow: ").strip()
+                book = next((b for b in self.library.books if b.title.lower() == title.lower()), None)
+                if book:
+                    member.borrow_book(self.library, book)
+                else:
+                    print(f"No book found with title '{title}'.")
+
+            elif choice == "2":
+                title = input("Enter the title of the book to return: ").strip()
+                book = next((b for b in member.borrowed_books if b.title.lower() == title.lower()), None)
+                if book:
+                    member.return_book(self.library, book)
+                else:
+                    print(f"No borrowed book found with title '{title}'.")
+
+            elif choice == "3":
+                member.display_borrowed_books()
+
+            elif choice == "4":
+                title = input("Enter the title to search for: ").strip()
+                self.library.search_books(title=title)
+
+            elif choice == "5":
+                print("Exiting Member Actions.")
+                break
+
+            else:
+                print("Invalid choice. Please choose again.")
+
+
+system = LibraryManagementSystem()
+system.run()
+
