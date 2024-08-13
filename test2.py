@@ -41,13 +41,13 @@ class SignUp:
                 new_librarian = Librarian()
                 self.library.librarians.append(new_librarian)
                 print("Librarian registered successfully.")
-                break
+                return new_librarian
 
             if user_type == 'member':
                 new_member = Member()
                 self.library.members.append(new_member)
                 print("Member registered successfully.")
-                break
+                return new_member
 
 class SignIn:
     def __init__(self, library):
@@ -133,7 +133,7 @@ class Member(Person):
             if book not in self.borrowed_books:
                 book.available = False
                 self.borrowed_books.append(book)
-                library.borrowed_books.append(book)  
+                library.borrowed_books.append(book)
                 print(f"Book '{book.title}' borrowed.")
             else:
                 print(f"Book '{book.title}' already borrowed.")
@@ -228,15 +228,12 @@ class Library:
             for book in borrowed_books:
                 book.display_info()
 
-
+# Main execution
 
 library = Library()
 
 sign_up = SignUp(library)
-sign_up.register_person()
-
-sign_in = SignIn(library)
-user = sign_in.authenticate()
+user = sign_up.register_person()
 
 if isinstance(user, Librarian):
     librarian = user
@@ -270,3 +267,51 @@ if isinstance(user, Librarian):
     member3.borrow_book(library, book2)
 
     library.display_borrowed_books()
+
+    member3.return_book(library, book2)
+
+    library.display_returned_books()
+
+elif isinstance(user, Member):
+    member = user
+    member.display_info()
+
+    while True:
+        print("\nMember Actions:")
+        print("1. Borrow a Book")
+        print("2. Return a Book")
+        print("3. Display Borrowed Books")
+        print("4. Search Books")
+        print("5. Exit")
+
+        choice = input("Choose an action: ")
+
+        if choice == "1":
+            title = input("Enter the title of the book to borrow: ").strip()
+            book = next((b for b in library.books if b.title.lower() == title.lower()), None)
+            if book:
+                member.borrow_book(library, book)
+            else:
+                print(f"No book found with title '{title}'.")
+
+        elif choice == "2":
+            title = input("Enter the title of the book to return: ").strip()
+            book = next((b for b in member.borrowed_books if b.title.lower() == title.lower()), None)
+            if book:
+                member.return_book(library, book)
+            else:
+                print(f"No borrowed book found with title '{title}'.")
+
+        elif choice == "3":
+            member.display_borrowed_books()
+
+        elif choice == "4":
+            title = input("Enter the title to search for: ").strip()
+            library.search_books(title=title)
+
+        elif choice == "5":
+            print("Exiting Member Actions.")
+            break
+
+        else:
+            print("Invalid choice. Please choose again.")
