@@ -60,7 +60,7 @@ class Library:
             self.borrowed_books.discard(book)
             messagebox.showinfo("Success", f"Book '{book.title}' removed.")
         else:
-            messagebox.showerror("Error", f"Book with ISBN '{isbn}' not found.")
+            messagebox.showerror("Error",f"Book with ISBN '{isbn}' not found.")
 
     def add_member(self, member):
         if not any(m.email == member.email for m in self.members):
